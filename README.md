@@ -1,5 +1,9 @@
 # IOP_audio_script
-**Python 3.6 or higher.**  
+## Overview
+- This repository demonstrates the implementation of the Audio Precision (APx500 series) Python API for **Stepped Frequency Sweep** and **Multitone Analyzer**.  
+<img width="804" height="742" alt="image" src="https://github.com/user-attachments/assets/20c231d7-4a86-4d73-bb17-665d1d8300ed" />
+
+- **Python 3.6 or higher.**  
 ```bash
 pip install -r requirements.txt
 ```
