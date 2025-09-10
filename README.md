@@ -26,6 +26,8 @@ pip install -r requirements.txt
   ```
   C:\Program Files\Audio Precision\APx500 9.1\API\
   ```
+  [Controlling APx500 Software with Python](https://www.ap.com/blog/controlling-apx500-software-using-python)
+- [Download APx500 Python API](https://www.ap.com/fileadmin-ap/technical-library/APx500_Python_Guide.zip)
 
 ---
 ## File Path Configuration
