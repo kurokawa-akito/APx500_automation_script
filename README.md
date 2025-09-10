@@ -2,7 +2,8 @@
 ## Overview
 - This repository demonstrates the implementation of the Audio Precision (APx500 series) Python API for **Stepped Frequency Sweep** and **Multitone Analyzer**.
 - **AudioQuality_FileAnalyze** at the following flow chart refers to the execution of both **Stepped Frequency Sweep** and **Multitone Analyzer**.
-<img width="804" height="742" alt="image" src="https://github.com/user-attachments/assets/20c231d7-4a86-4d73-bb17-665d1d8300ed" />
+<img width="612" height="757" alt="image" src="https://github.com/user-attachments/assets/fe8b6e6f-197a-4345-8c1e-ca10ad0303bc" />
+
 
 - **Python 3.6 or higher.**  
 ```bash
