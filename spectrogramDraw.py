@@ -40,5 +40,5 @@ def analyze_audio_spectrum(file_path, target_freq=1000, tolerance=50):
         print(f"{f:.1f} Hz")
 
 # Example usage (replace 'your_audio.wav' with actual file path)
-analyze_audio_spectrum("tone.wav")
+analyze_audio_spectrum("0dB_Freq_sweep_400LnPts_20HzTo24kHz_48k24b2Chs.wav")
 
