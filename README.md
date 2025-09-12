@@ -47,30 +47,45 @@ Ensure the following paths are correctly set in `audio_quality_paths.json`:
     }
 }
 ```
-⚠️ Note: All paths must be absolute and accessible from the PC running APx500.  
 
 ### Mobile-side Audio Files
-- class audioFilePlay in adbCommand.py
-  - This module provides functionality to locate and play audio files stored on an Android device using **ADB (Android Debug Bridge)**.
+```python
+adb_command.audioFilePlay.play_audio()
+```
+  - This function attempts to play a specified audio file on a connected Android device using ADB. It checks multiple predefined folders under `/storage/emulated/0/` to locate the file.
 - File Lookup Logic
-  - The script attempts to locate the specified audio file in the following folders on the mobile device:
-    1. `/storage/emulated/0/Music/Source_DUT_48kHz`
-    2. `/storage/emulated/0/Music/48k`
-    3. `/storage/emulated/0/Music/Source_DUT_96kHz`
-    4. `/storage/emulated/0/Music/96k`
-  - If the audio file is not found through these paths, the script will show a failed message.
-  - If you want to place the audio file in another directory, add your desired path to the list in the for loop inside the play_audio() function:
-  ```python
-  for folder in ["Music/Source_DUT_48kHz", "Music/48k"]:
-  ```
+  - Loop through each folder listed in the `audio_quality_paths.json` under `playback_folders`.
+  - Check if the audio file exists in that folder using `adb shell ls`.
+  - If found, send an intent to play the file using:
+    ```
+    adb shell am start -a android.intent.action.VIEW -d file://... -t audio/wav
+    ```
+  - The folders to be searched are defined in the `audio_quality_paths.json` under the key `playback_folders`. Example:
+    ```json
+    "playback_folders": [
+        "Music",
+        "Music/Source_DUT_48kHz",
+        "Music/48k",
+        "Music/Source_DUT_96kHz",
+        "Music/96k"
+    ]
+    ```
+  - These paths are relative to `/storage/emulated/0/`. The function will automatically check each of them in order until the file is found.
+  - **💡 The `playback_folders` above are just default paths. You can modify them yourself in `audio_quality_paths.json`.**
 
 #### Example Folder Structure on Device
+```
 /storage/emulated/0/  
 ├── Music/  
 │   ├── Source_DUT_48kHz/  
 │   │   └── test_tone.wav  
 │   ├── 48k/  
 │   │   └── test_tone.wav  
+│   ├── Source_DUT_96kHz/  
+│   │   └── test_tone.wav  
+│   ├── 96k/  
+│   │   └── test_tone.wav  
+```
 
 ---
 ## Usage
@@ -82,12 +97,23 @@ Options:
 --fs: Sampling rate, either 48k or 96k.  
 
 ### Optional 
-#### Disable Report Display
-If you do not want to show the report after the test, comment out the following line in audioQualityEvkI2s.run_sequence():  
+#### Report Saving & Display Behavior
+audio_quality_test.audioQualityEvkI2s.generate_report() configures how the APx500 report is handled:
 ```python
-self.generate_report()
+def generate_report(self):
+    self.APx.Sequence.Report.Checked = True
+    self.APx.Sequence.Report.AutoSaveReportFileLocation = paths["report_folder"]
+    self.APx.Sequence.Report.AutoSaveReport = False
+    self.APx.Sequence.Report.ShowAutoSavedReport = True
 ```
-This will prevent the APx500 GUI from displaying the report.
+- Enables report generation
+- Sets the folder path for saving reports
+- `AutoSaveReport`:  
+  - `True` → Automatically saves the report after the sequence runs  
+  - `False` → Does not save the report automatically
+- `ShowAutoSavedReport`:  
+  - `True` → Opens the report automatically after testing  
+  - `False` → Does not open the report after testing
 
 ---
 ## Note
