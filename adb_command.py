@@ -78,7 +78,7 @@ class audioFilePlay:
         self.log("CHECK", f"Attempting to play audio file: {audioFile}")
         mime_type = "audio/wav" if audioFile.lower().endswith(".wav") else "audio/mp3"
 
-        for folder in ["Music/Source_DUT_48kHz", "Music/48k"]:
+        for folder in ["Music/Source_DUT_48kHz", "Music/48k", "Music/Source_DUT_96kHz", "Music/96k"]:
             if self.check_file_exists(folder, audioFile):
                 file_path = f"file:///storage/emulated/0/{folder}/{audioFile}"
                 play_command = f"adb shell am start -a android.intent.action.VIEW -d {file_path} -t {mime_type}"

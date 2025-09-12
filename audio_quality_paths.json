@@ -19,5 +19,12 @@
             "Freq_sweep_400LnPts_20HzTo48kHz_0dB_96k24b2Chs.wav",
             "4min_96k_multitone.wav"
         ]
-    }
+    },
+    "playback_folders": [
+        "Music",
+        "Music/Source_DUT_48kHz",
+        "Music/48k",
+        "Music/Source_DUT_96kHz",
+        "Music/96k"
+        ]
 }

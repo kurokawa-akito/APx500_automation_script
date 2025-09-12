@@ -3,8 +3,8 @@ import threading
 import argparse
 import glob
 import json
-from adbCommand import audioFilePlay
-from toneSplitter import silenceSplitter, manualSplitter
+from adb_command import audioFilePlay
+from tone_splitter import silenceSplitter
 
 # Add a reference to the APx API
 clr.AddReference(
