@@ -2,6 +2,10 @@ import subprocess
 import shutil
 import time
 from colorama import init, Fore, Style
+import json
+
+with open("audio_quality_paths.json", "r") as f:
+    paths = json.load(f)
 
 init(autoreset=True)
 
@@ -77,8 +81,9 @@ class audioFilePlay:
 
         self.log("CHECK", f"Attempting to play audio file: {audioFile}")
         mime_type = "audio/wav" if audioFile.lower().endswith(".wav") else "audio/mp3"
+        playback_folders = paths.get("playback_folders", [])
 
-        for folder in ["Music/Source_DUT_48kHz", "Music/48k", "Music/Source_DUT_96kHz", "Music/96k"]:
+        for folder in playback_folders:
             if self.check_file_exists(folder, audioFile):
                 file_path = f"file:///storage/emulated/0/{folder}/{audioFile}"
                 play_command = f"adb shell am start -a android.intent.action.VIEW -d {file_path} -t {mime_type}"

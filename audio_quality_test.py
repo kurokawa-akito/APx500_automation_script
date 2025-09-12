@@ -169,8 +169,8 @@ if __name__ == "__main__":
 
     APx = project_init(paths["project_path"])
 
-    tester = audioQualityEvkI2s(APx, args.fs)
-    tester.run_sequence()
+    # tester = audioQualityEvkI2s(APx, args.fs)
+    # tester.run_sequence()
 
     recording_file_path = paths["recording_file"][args.fs]
     spliter = silenceSplitter(recording_file_path)
