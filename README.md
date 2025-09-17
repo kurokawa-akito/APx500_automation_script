@@ -28,6 +28,7 @@ pip install -r requirements.txt
   ```
 - [Controlling APx500 Software with Python](https://www.ap.com/blog/controlling-apx500-software-using-python)
 - [Download APx500 Python API](https://www.ap.com/fileadmin-ap/technical-library/APx500_Python_Guide.zip)
+  - After downloading and extracting the APx500_Python_Guide, open the folder, launch the 'APx500 Python Guide.pdf', and follow the instructions inside to install the API.
 
 ---
 ## File Path Configuration
@@ -94,7 +95,7 @@ Run the script from the command line:
 python audio_quality_test.py --fs 48k
 ```
 Options:   
---fs: Sampling rate, either 48k or 96k.  
+--fs: Sampling rate, either 48k or 96k (default: 48k).  
 
 ### Optional 
 #### Report Saving & Display Behavior

@@ -172,9 +172,9 @@ if __name__ == "__main__":
     # tester = audioQualityEvkI2s(APx, args.fs)
     # tester.run_sequence()
 
-    recording_file_path = paths["recording_file"][args.fs]
-    spliter = silenceSplitter(recording_file_path)
-    spliter.pydub_split()
+    # recording_file_path = paths["recording_file"][args.fs]
+    # spliter = silenceSplitter(recording_file_path)
+    # spliter.pydub_split()
 
-    analyzer = audioQualityFileAnalyze(APx, args.fs)
-    analyzer.run_sequence()
+    # analyzer = audioQualityFileAnalyze(APx, args.fs)
+    # analyzer.run_sequence()
