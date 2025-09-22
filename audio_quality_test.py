@@ -4,7 +4,7 @@ import argparse
 import glob
 import json
 from adb_command import audioFilePlay
-from tone_splitter import silenceSplitter
+from tone_splitter import silenceSplitter, manualSplitter
 
 # Add a reference to the APx API
 clr.AddReference(
@@ -46,20 +46,27 @@ class audioQualityEvkI2s:
             "AudioQuality_EVK_I2S", "Measurement Recorder"
         )
         recorder.Checked = True
-        recorder.Run()
+        recorder.Show()
         self.APx.MeasurementRecorder.SaveAcquisitionToFile = True
         self.APx.MeasurementRecorder.SavedAcquisitionFolderName = paths["report_folder"]
-        self.APx.MeasurementRecorder.SavedAcquisitionFileName = f"{self.fs}Hz.wav"
+        self.APx.MeasurementRecorder.SavedAcquisitionFileName = f"{self.fs}Hz"
+        recorder.Run()
 
     def generate_report(self):
-        self.APx.Sequence.Report.Checked = True
+        self.APx.Sequence.Report.Checked = False
         self.APx.Sequence.Report.AutoSaveReportFileLocation = paths["report_folder"]
         self.APx.Sequence.Report.AutoSaveReport = False
-        self.APx.Sequence.Report.ShowAutoSavedReport = True
+        self.APx.Sequence.Report.ShowAutoSavedReport = False
 
     def dynamic_range_files(self):
         player = audioFilePlay()
-        if player.play_audio(paths["dynamic_range_file"]):
+        if self.fs == "48k":
+            player.play_audio(paths["dynamic_range_file"]["48k"])
+            time.sleep(30)
+            player.app_cancel()
+
+        elif self.fs == "96k":
+            player.play_audio(paths["dynamic_range_file"]["96k"])
             time.sleep(30)
             player.app_cancel()
 
@@ -111,17 +118,17 @@ class audioQualityFileAnalyze:
         self.fs = fs
 
         segment_folder = paths["segment_result_folder"][self.fs]
-        self.freq_sweep_files = [f"{segment_folder}/{self.fs}_segment_1.wav"]
+        self.freq_sweep_files = [f"{segment_folder}/{self.fs}_freq_sweep.wav"]
         self.multitone_files = sorted(
-            glob.glob(f"{segment_folder}/{self.fs}_segment_*.wav")
-        )[1:]
+            glob.glob(f"{segment_folder}/{self.fs}_multitone_*.wav")
+        )
 
     def choose_files(self, measurement_name: str, wav_file_path: list):
         measurement = self.APx.Sequence.GetMeasurement(
             "AudioQuality_FileAnalyze", measurement_name
         )
         measurement.Checked = True
-        measurement.Run()
+        measurement.Show()
 
         if measurement_name == f"{self.fs}Hz_Stepped Frequency Sweep":
             setting = self.APx.SteppedFrequencySweep.FileAnalysisSettings
@@ -169,8 +176,8 @@ if __name__ == "__main__":
 
     APx = project_init(paths["project_path"])
 
-    # tester = audioQualityEvkI2s(APx, args.fs)
-    # tester.run_sequence()
+    tester = audioQualityEvkI2s(APx, args.fs)
+    tester.run_sequence()
 
     recording_file_path = paths["recording_file"][args.fs]
     spliter = silenceSplitter(recording_file_path)

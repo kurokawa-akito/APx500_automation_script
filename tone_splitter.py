@@ -60,10 +60,10 @@ class silenceSplitter:
 
         filename = os.path.basename(self.audio_path)
         if "48k" in filename:
-            prefix = "48k_segment"
+            prefix = "48k"
             output_dir = paths["segment_result_folder"]["48k"]
         elif "96k" in filename:
-            prefix = "96k_segment"
+            prefix = "96k"
             output_dir = paths["segment_result_folder"]["96k"]
         else:
             raise ValueError(
@@ -75,11 +75,14 @@ class silenceSplitter:
         chunks = split_on_silence(
             sound, min_silence_len=800, silence_thresh=sound.dBFS - 35, keep_silence=300
         )
-
         for i, chunk in enumerate(chunks):
-            out_file = os.path.join(output_dir, f"{prefix}_{i+1}.wav")
+            if i == 0:
+                out_file = os.path.join(output_dir, f"{prefix}_freq_sweep.wav")
+            else:
+                out_file = os.path.join(output_dir, f"{prefix}_multitone_{i}.wav")
             chunk.export(out_file, format="wav")
             print(f"save as: {out_file}")
+
 
 
 class manualSplitter:
@@ -90,10 +93,10 @@ class manualSplitter:
     def split_audio(self):
         filename = os.path.basename(self.audio_path)
         if "48k" in filename:
-            prefix = "48k_segment"
+            prefix = "48k"
             output_dir = paths["segment_result_folder"]["48k"]
         elif "96k" in filename:
-            prefix = "96k_segment"
+            prefix = "96k"
             output_dir = paths["segment_result_folder"]["96k"]
         else:
             raise ValueError(
@@ -108,13 +111,16 @@ class manualSplitter:
 
         first_multitone_start = (7 * 60 + 44) * 1000
         for i in range(8):
-            start = first_multitone_start + i * (16000 + 14000)
-            end = start + 16000
+            start = first_multitone_start + i * (22000 + 14000)
+            end = start + 22000
             segments.append((start, end))
 
         for i, (start, end) in enumerate(segments):
             chunk = self.sound[start:end]
-            out_file = os.path.join(output_dir, f"{prefix}_{i+1}.wav")
+            if i == 0:
+                out_file = os.path.join(output_dir, f"{prefix}_freq_sweep.wav")
+            else:
+                out_file = os.path.join(output_dir, f"{prefix}_multitone_{i}.wav")
             chunk.export(out_file, format="wav")
             print(f"Saved: {out_file}")
 
