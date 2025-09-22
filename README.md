@@ -112,7 +112,7 @@ def generate_report(self):
 - `AutoSaveReport`:  
   - `True` → Automatically saves the report after the sequence runs  
   - `False` → Does not save the report automatically
-- `ShowAutoSavedReport`:  
+- `Report.Checked`:  
   - `True` → Opens the report automatically after testing  
   - `False` → Does not open the report after testing
 
