@@ -25,31 +25,6 @@ class wavFileAnalysis:
         plt.show()
 
 
-# fast, but quality sounds strange
-class librosaSplitter:
-    def __init__(self, audio_path, top_db=30):
-        self.audio_path = audio_path
-        self.top_db = top_db
-
-    def librosa_split(self):
-        y, sr = librosa.load(self.audio_path, sr=None)
-
-        intervals = librosa.effects.split(y, top_db=self.top_db)
-        print(f"detect {len(intervals)} voices")
-
-        filename = os.path.basename(self.audio_path)
-        if "48k" in filename:
-            prefix = "48k_segment"
-        elif "96k" in filename:
-            prefix = "96k_segment"
-
-        for i, (start, end) in enumerate(intervals):
-            segment = y[start:end]
-            output_filename = f"{prefix}_{i+1}.wav"
-            sf.write(output_filename, segment, sr)
-            print(f"saved: {output_filename}")
-
-
 # slower than librosa, but quality sounds same as original tone
 class silenceSplitter:
     def __init__(self, audio_path):
@@ -69,20 +44,22 @@ class silenceSplitter:
             raise ValueError(
                 "Filename must contain '48k' or '96k' to determine output folder."
             )
-
         os.makedirs(output_dir, exist_ok=True)
+        sweep_path = os.path.join(output_dir, f"{prefix}_freq_sweep.wav")
+        sweep_exists = os.path.exists(sweep_path)
 
         chunks = split_on_silence(
             sound, min_silence_len=800, silence_thresh=sound.dBFS - 35, keep_silence=300
         )
+        
         for i, chunk in enumerate(chunks):
-            if i == 0:
+            if not sweep_exists and i == 0:
                 out_file = os.path.join(output_dir, f"{prefix}_freq_sweep.wav")
             else:
-                out_file = os.path.join(output_dir, f"{prefix}_multitone_{i}.wav")
+                index = i + 1 if sweep_exists else i
+                out_file = os.path.join(output_dir, f"{prefix}_multitone_{index}.wav")
             chunk.export(out_file, format="wav")
-            print(f"save as: {out_file}")
-
+            print(f"Save as: {out_file}")
 
 
 class manualSplitter:
@@ -90,7 +67,34 @@ class manualSplitter:
         self.audio_path = audio_path
         self.sound = AudioSegment.from_wav(audio_path)
 
-    def split_audio(self):
+    def split_sweep_only(self):
+            filename = os.path.basename(self.audio_path)
+            if "48k" in filename:
+                prefix = "48k"
+                output_dir = paths["segment_result_folder"]["48k"]
+            elif "96k" in filename:
+                prefix = "96k"
+                output_dir = paths["segment_result_folder"]["96k"]
+            else:
+                raise ValueError(
+                    "Filename must contain '48k' or '96k' to determine output folder."
+                )
+            os.makedirs(output_dir, exist_ok=True)
+
+            sweep_end = (6 * 60 + 44) * 1000
+            sweep_segment = self.sound[:sweep_end]
+
+            out_file = os.path.join(output_dir, f"{prefix}_freq_sweep.wav")
+            sweep_segment.export(out_file, format="wav")
+            print(f"Saved as: {out_file}")
+
+            remaining_audio_path = os.path.join(output_dir, f"{prefix}_recording_multitone.wav")
+            remaining_segment = self.sound[sweep_end:]
+            remaining_segment.export(remaining_audio_path, format="wav")
+
+            return remaining_audio_path
+
+    def split_full(self):
         filename = os.path.basename(self.audio_path)
         if "48k" in filename:
             prefix = "48k"
@@ -123,4 +127,3 @@ class manualSplitter:
                 out_file = os.path.join(output_dir, f"{prefix}_multitone_{i}.wav")
             chunk.export(out_file, format="wav")
             print(f"Saved: {out_file}")
-
