@@ -4,3 +4,5 @@ librosa
 soundfile
 pydub
 scipy
+pandas
+colorama

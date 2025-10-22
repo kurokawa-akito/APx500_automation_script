@@ -28,18 +28,26 @@ def project_init(path=None):
         print(f"file path not exist")
     return APx
 
-
+# adb shell am start -a android.intent.action.VIEW -d file:///storage/emulated/0/Music/DNR_1kHz_48kHz24b2Ch.wav -t audio/wav
 class audioQualityEvkI2s:
     def __init__(self, APx, fs):
         self.APx = APx
         self.fs = fs  # sample rate
+
+    def export_graph(self):
+        export = self.APx.DynamicRange.DynamicRange
+        export.Checked = True
+        export.Show()
+        export.Save(f"{paths["graph_folder"].get(self.fs)}/DNR.png", GraphImageType.PNG)
 
     def dynamic_range(self):
         DNR = self.APx.Sequence.GetMeasurement(
             "AudioQuality_EVK_I2S", "Dynamic Range - AES17"
         )
         DNR.Checked = True
+        DNR.Show()
         DNR.Run()
+        self.export_graph()
 
     def measurement_recorder(self):
         recorder = self.APx.Sequence.GetMeasurement(
@@ -83,7 +91,7 @@ class audioQualityEvkI2s:
 
         elif self.fs == "96k":
             player.play_audio(paths["measurement_recorder_files"]["96k"][0])
-            time.sleep(404)
+            time.sleep(403)
             player.app_cancel()
 
             player.play_audio(paths["measurement_recorder_files"]["96k"][1])
@@ -140,14 +148,54 @@ class audioQualityFileAnalyze:
             setting.WavFiles = wav_file_path
             self.APx.MultitoneAnalyzer.AnalyzeFiles = True
 
+    def export_freq_sweep_graph(self):
+        exportRMS = self.APx.SteppedFrequencySweep.Level
+        exportRMS.Checked = True
+        exportRMS.Show()
+        exportRMS.Save(f"{paths["graph_folder"].get(self.fs)}/sweep_RMSLevel.png", GraphImageType.PNG)
+
+        exportRelative = self.APx.SteppedFrequencySweep.RelativeLevel
+        exportRelative.Checked = True
+        exportRelative.Show()
+        exportRelative.Save(f"{paths["graph_folder"].get(self.fs)}/sweep_RelativeLevel.png", GraphImageType.PNG)
+
+        exportPhase = self.APx.SteppedFrequencySweep.Phase
+        exportPhase.Checked = True
+        exportPhase.Show()
+        exportPhase.Save(f"{paths["graph_folder"].get(self.fs)}/sweep_Phase.png", GraphImageType.PNG)
+
+        exportThdNRatio = self.APx.SteppedFrequencySweep.ThdNRatio
+        exportThdNRatio.Checked = True
+        exportThdNRatio.Show()
+        exportThdNRatio.Save(f"{paths["graph_folder"].get(self.fs)}/sweep_ThdNRatio.png", GraphImageType.PNG)
+
     def freq_sweep(self):
         measurement_name = f"{self.fs}Hz_Stepped Frequency Sweep"
         freq_sweep = self.APx.Sequence.GetMeasurement(
             "AudioQuality_FileAnalyze", measurement_name
         )
         freq_sweep.Checked = True
+        freq_sweep.Show()
         self.choose_files(measurement_name, self.freq_sweep_files)
         freq_sweep.Run()
+        self.export_freq_sweep_graph()
+    
+    def export_csv(self):
+        exportStep = self.APx.MultitoneAnalyzer.FFTSpectrum
+        exportStep.Checked = True
+        exportStep.Show()
+        exportStep.ExportData(f"{paths["report_folder"]}/{self.fs}_raw_data.csv", "All Points")
+
+    def export_multitone_graph(self):
+        exportFFT = self.APx.MultitoneAnalyzer.FFTSpectrum
+        exportFFT.Checked = True
+        exportFFT.Show()
+        exportFFT.Save(f"{paths["graph_folder"].get(self.fs)}/multitone_RelativeLevel_FFT.png", GraphImageType.PNG)
+
+        exportRelative = self.APx.MultitoneAnalyzer.RelativeLevel
+        exportRelative.Checked = True
+        exportRelative.Show()
+        exportRelative.Save(f"{paths["graph_folder"].get(self.fs)}/multitone_RelativeLevel.png", GraphImageType.PNG)
 
     def multitone_analyzer(self):
         measurement_name = f"{self.fs}Hz_Multitone Analyzer"
@@ -155,8 +203,11 @@ class audioQualityFileAnalyze:
             "AudioQuality_FileAnalyze", measurement_name
         )
         analyzer.Checked = True
+        analyzer.Show()
         self.choose_files(measurement_name, self.multitone_files)
         analyzer.Run()
+        self.export_csv()
+        self.export_multitone_graph()
 
     def run_sequence(self):
         self.freq_sweep()
@@ -172,16 +223,30 @@ if __name__ == "__main__":
         default="48k",
         help="Sampling rate (48k or 96k)",
     )
+    parser.add_argument(
+        "--step",
+        type=int,
+        choices=[1, 2, 3],
+        nargs="*",
+        default=[1, 2, 3],
+        help="Select function(s) to run: 1=audioQualityEvkI2s, 2=manual+silenceSplitter, 3=audioQualityFileAnalyze",
+    )
     args = parser.parse_args()
 
     APx = project_init(paths["project_path"])
 
-    tester = audioQualityEvkI2s(APx, args.fs)
-    tester.run_sequence()
+    if 1 in args.step:
+        tester = audioQualityEvkI2s(APx, args.fs)
+        tester.run_sequence()
 
-    # recording_file_path = paths["recording_file"][args.fs]
-    # spliter = silenceSplitter(recording_file_path)
-    # spliter.pydub_split()
+    if 2 in args.step:
+        recording_file_path = paths["recording_file"][args.fs]
+        manual = manualSplitter(recording_file_path)
+        remaining_path = manual.split_sweep_only()
 
-    # analyzer = audioQualityFileAnalyze(APx, args.fs)
-    # analyzer.run_sequence()
+        silence = silenceSplitter(remaining_path)
+        silence.pydub_split()
+
+    if 3 in args.step:
+        analyzer = audioQualityFileAnalyze(APx, args.fs)
+        analyzer.run_sequence()

@@ -1,0 +1,13 @@
+{
+  "source_info": {
+    "Date": "2025/8/18",
+    "Source": "Xiaomi P11U",
+    "Codec": "aptX adaptive AAR2.1/AAR3",
+    "Bit rate": "N/A",
+    "Prerequisite": "Adjust to full volume\nConfirm EQ of Muzio Player is off, all sound effect is off",
+    "Others": ""
+  },
+  "sink_info": {
+    "Sink": "QCC5181 EVK\n    • AAR2.1: ADK 24.3 r01102.1, HS build, i2s out\n    • AAR3: ADK 24.3 r01102.1, EB build, i2s out"
+  }
+}
