@@ -28,7 +28,7 @@ def project_init(path=None):
         print(f"file path not exist")
     return APx
 
-# adb shell am start -a android.intent.action.VIEW -d file:///storage/emulated/0/Music/DNR_1kHz_48kHz24b2Ch.wav -t audio/wav
+# adb shell am start -a android.intent.action.VIEW -d file:///storage/emulated/0/Music/DNR_1kHz_48kHz24b2Ch.wav -t audio/wav -n com.shaiban.audioplayer.mplayer/.ui.activities.FloatingPlayerActivity
 class audioQualityEvkI2s:
     def __init__(self, APx, fs):
         self.APx = APx
@@ -82,7 +82,7 @@ class audioQualityEvkI2s:
         player = audioFilePlay()
         if self.fs == "48k":
             player.play_audio(paths["measurement_recorder_files"]["48k"][0])
-            time.sleep(403)
+            time.sleep(404)
             player.app_cancel()
 
             player.play_audio(paths["measurement_recorder_files"]["48k"][1])
@@ -91,7 +91,7 @@ class audioQualityEvkI2s:
 
         elif self.fs == "96k":
             player.play_audio(paths["measurement_recorder_files"]["96k"][0])
-            time.sleep(403)
+            time.sleep(404)
             player.app_cancel()
 
             player.play_audio(paths["measurement_recorder_files"]["96k"][1])
@@ -105,6 +105,7 @@ class audioQualityEvkI2s:
         DNR_player_thread = threading.Thread(target=self.dynamic_range_files)
 
         DNR_player_thread.start()
+        time.sleep(10)
         DNR_thread.start()
 
         DNR_player_thread.join()

@@ -85,8 +85,12 @@ class audioFilePlay:
 
         for folder in playback_folders:
             if self.check_file_exists(folder, audioFile):
-                file_path = f"file:///storage/emulated/0/{folder}/{audioFile}"
-                play_command = f"adb shell am start -a android.intent.action.VIEW -d {file_path} -t {mime_type}"
+                file_path = f"file:///storage/emulated/0/{folder}/{audioFile}"         
+                play_command = (
+                                f"adb shell am start -a android.intent.action.VIEW "
+                                f"-d {file_path} -t {mime_type} "
+                                f"-n com.shaiban.audioplayer.mplayer/.ui.activities.FloatingPlayerActivity"
+                            )
                 result = self.run_command(play_command)
 
                 if result:
