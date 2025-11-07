@@ -1,4 +1,4 @@
-import clr, time, sys
+import clr, time, os, sys
 import threading
 import argparse
 import glob
@@ -28,6 +28,7 @@ def project_init(path=None):
         print(f"file path not exist")
     return APx
 
+
 # adb shell am start -a android.intent.action.VIEW -d file:///storage/emulated/0/Music/DNR_1kHz_48kHz24b2Ch.wav -t audio/wav -n com.shaiban.audioplayer.mplayer/.ui.activities.FloatingPlayerActivity
 class audioQualityEvkI2s:
     def __init__(self, APx, fs):
@@ -35,6 +36,7 @@ class audioQualityEvkI2s:
         self.fs = fs  # sample rate
 
     def export_graph(self):
+        os.makedirs(paths["graph_folder"].get(self.fs), exist_ok=True)
         export = self.APx.DynamicRange.DynamicRange
         export.Checked = True
         export.Show()
@@ -82,7 +84,7 @@ class audioQualityEvkI2s:
         player = audioFilePlay()
         if self.fs == "48k":
             player.play_audio(paths["measurement_recorder_files"]["48k"][0])
-            time.sleep(404)
+            time.sleep(403)
             player.app_cancel()
 
             player.play_audio(paths["measurement_recorder_files"]["48k"][1])
@@ -91,7 +93,7 @@ class audioQualityEvkI2s:
 
         elif self.fs == "96k":
             player.play_audio(paths["measurement_recorder_files"]["96k"][0])
-            time.sleep(404)
+            time.sleep(403)
             player.app_cancel()
 
             player.play_audio(paths["measurement_recorder_files"]["96k"][1])
@@ -150,25 +152,37 @@ class audioQualityFileAnalyze:
             self.APx.MultitoneAnalyzer.AnalyzeFiles = True
 
     def export_freq_sweep_graph(self):
+        os.makedirs(paths["graph_folder"].get(self.fs), exist_ok=True)
         exportRMS = self.APx.SteppedFrequencySweep.Level
         exportRMS.Checked = True
         exportRMS.Show()
-        exportRMS.Save(f"{paths["graph_folder"].get(self.fs)}/sweep_RMSLevel.png", GraphImageType.PNG)
+        exportRMS.Save(
+            f"{paths["graph_folder"].get(self.fs)}/sweep_RMSLevel.png",
+            GraphImageType.PNG,
+        )
 
         exportRelative = self.APx.SteppedFrequencySweep.RelativeLevel
         exportRelative.Checked = True
         exportRelative.Show()
-        exportRelative.Save(f"{paths["graph_folder"].get(self.fs)}/sweep_RelativeLevel.png", GraphImageType.PNG)
+        exportRelative.Save(
+            f"{paths["graph_folder"].get(self.fs)}/sweep_RelativeLevel.png",
+            GraphImageType.PNG,
+        )
 
         exportPhase = self.APx.SteppedFrequencySweep.Phase
         exportPhase.Checked = True
         exportPhase.Show()
-        exportPhase.Save(f"{paths["graph_folder"].get(self.fs)}/sweep_Phase.png", GraphImageType.PNG)
+        exportPhase.Save(
+            f"{paths["graph_folder"].get(self.fs)}/sweep_Phase.png", GraphImageType.PNG
+        )
 
         exportThdNRatio = self.APx.SteppedFrequencySweep.ThdNRatio
         exportThdNRatio.Checked = True
         exportThdNRatio.Show()
-        exportThdNRatio.Save(f"{paths["graph_folder"].get(self.fs)}/sweep_ThdNRatio.png", GraphImageType.PNG)
+        exportThdNRatio.Save(
+            f"{paths["graph_folder"].get(self.fs)}/sweep_ThdNRatio.png",
+            GraphImageType.PNG,
+        )
 
     def freq_sweep(self):
         measurement_name = f"{self.fs}Hz_Stepped Frequency Sweep"
@@ -180,23 +194,32 @@ class audioQualityFileAnalyze:
         self.choose_files(measurement_name, self.freq_sweep_files)
         freq_sweep.Run()
         self.export_freq_sweep_graph()
-    
+
     def export_csv(self):
         exportStep = self.APx.MultitoneAnalyzer.FFTSpectrum
         exportStep.Checked = True
         exportStep.Show()
-        exportStep.ExportData(f"{paths["report_folder"]}/{self.fs}_raw_data.csv", "All Points")
+        exportStep.ExportData(
+            f"{paths["report_folder"]}/{self.fs}_raw_data.csv", "All Points"
+        )
 
     def export_multitone_graph(self):
+        os.makedirs(paths["graph_folder"].get(self.fs), exist_ok=True)
         exportFFT = self.APx.MultitoneAnalyzer.FFTSpectrum
         exportFFT.Checked = True
         exportFFT.Show()
-        exportFFT.Save(f"{paths["graph_folder"].get(self.fs)}/multitone_RelativeLevel_FFT.png", GraphImageType.PNG)
+        exportFFT.Save(
+            f"{paths["graph_folder"].get(self.fs)}/multitone_RelativeLevel_FFT.png",
+            GraphImageType.PNG,
+        )
 
         exportRelative = self.APx.MultitoneAnalyzer.RelativeLevel
         exportRelative.Checked = True
         exportRelative.Show()
-        exportRelative.Save(f"{paths["graph_folder"].get(self.fs)}/multitone_RelativeLevel.png", GraphImageType.PNG)
+        exportRelative.Save(
+            f"{paths["graph_folder"].get(self.fs)}/multitone_RelativeLevel.png",
+            GraphImageType.PNG,
+        )
 
     def multitone_analyzer(self):
         measurement_name = f"{self.fs}Hz_Multitone Analyzer"
@@ -213,6 +236,23 @@ class audioQualityFileAnalyze:
     def run_sequence(self):
         self.freq_sweep()
         self.multitone_analyzer()
+
+
+def insert_folder(path, folder_name):
+    return path.replace("audio_report/", f"audio_report/{folder_name}/")
+
+
+def make_dirs(paths_dict):
+    for key in [
+        "recording_file",
+        "segment_result_folder",
+        "graph_folder",
+        "csv_raw_data_files",
+    ]:
+        for file in paths_dict[key]:
+            file_path = paths_dict[key][file]
+            parent_dir = os.path.dirname(file_path)
+            os.makedirs(parent_dir, exist_ok=True)
 
 
 if __name__ == "__main__":
@@ -232,7 +272,25 @@ if __name__ == "__main__":
         default=[1, 2, 3],
         help="Select function(s) to run: 1=audioQualityEvkI2s, 2=manual+silenceSplitter, 3=audioQualityFileAnalyze",
     )
+    parser.add_argument(
+        "--folder",
+        type=str,
+        required=False,
+        help="Create a folder based on the customer name",
+    )
     args = parser.parse_args()
+
+    if args.folder:
+        paths["report_folder"] = os.path.join(paths["report_folder"], args.folder)
+        for key in [
+            "recording_file",
+            "segment_result_folder",
+            "graph_folder",
+            "csv_raw_data_files",
+        ]:
+            for file in paths[key]:
+                paths[key][file] = insert_folder(paths[key][file], args.folder)
+        make_dirs(paths)
 
     APx = project_init(paths["project_path"])
 
@@ -242,10 +300,10 @@ if __name__ == "__main__":
 
     if 2 in args.step:
         recording_file_path = paths["recording_file"][args.fs]
-        manual = manualSplitter(recording_file_path)
+        manual = manualSplitter(recording_file_path, paths)
         remaining_path = manual.split_sweep_only()
 
-        silence = silenceSplitter(remaining_path)
+        silence = silenceSplitter(remaining_path, paths)
         silence.pydub_split()
 
     if 3 in args.step:
